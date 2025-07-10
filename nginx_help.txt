@@ -45,3 +45,39 @@ http {
 
 section_03
 
+location url { 
+    configurations ...
+}
+
+contex: server , location
+
+root path
+
+/var/log/nginx/error.log
+
+http://127.0.0.1:81/blog.html
+
+sample code:
+-----------------
+user sss;
+
+events {}
+
+http {
+        server {
+                server_name 127.0.0.1;
+                listen 81;
+                root /home/sss/Desktop/nginx/blog;
+                index blog.html;
+
+                location /docs {
+                        index doc.html;
+                }
+        }       
+}
+
+------------------------------------------------------------
+
+session_03
+
+logging
