@@ -1,0 +1,6 @@
+ session_01
+
+ install nginx
+ sudo systemctl status nginx.service
+ sudo  systemctl start nginx.service 
+ sudo systemctl enable nginx.service
