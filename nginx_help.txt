@@ -1,6 +1,47 @@
- session_01
+session_01
 
- install nginx
- sudo systemctl status nginx.service
- sudo  systemctl start nginx.service 
- sudo systemctl enable nginx.service
+install nginx
+sudo systemctl status nginx.service
+sudo  systemctl start nginx.service 
+sudo systemctl enable nginx.service
+directve
+contex = block or section
+
+------------------------------------------------------------
+
+session_02
+
+modules
+
+http
+
+http core modules
+nginx -h = help 
+sudo nginx -t = test config files
+events {} = use events contex is forced
+sudo  systemctl restart nginx.service 
+sudo  systemctl reload nginx.service 
+
+sample code:
+-----------------
+# main context
+
+events {}
+
+http {
+        server {
+                server_name 127.0.0.1;
+                listen 81;
+                return 200 "hello";
+        }
+        server { 
+                server_name 127.0.0.2;
+                listen 81;
+                return 200 "hello 127002 this is new page";
+        }
+}
+
+------------------------------------------------------------
+
+section_03
+
