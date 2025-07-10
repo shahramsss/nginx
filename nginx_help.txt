@@ -45,6 +45,11 @@ http {
 
 section_03
 
+user 
+root
+index
+location 
+
 location url { 
     configurations ...
 }
@@ -56,6 +61,33 @@ root path
 /var/log/nginx/error.log
 
 http://127.0.0.1:81/blog.html
+
+location /somepath/ {
+    root /var/www/html;
+}
+http://example.com/somepath/image.jpg
+/var/www/html/somepath/image.jpg
+
+
+location / {
+        # تنظیمات پیش‌فرض برای همه‌ی درخواست‌ها
+    }
+
+    location /images/ {
+        # برای درخواست‌هایی که با /images/ شروع می‌شوند
+    }
+
+    location = /about {
+        # فقط برای /about دقیقاً
+    }
+
+    location ~ \.php$ {
+        # برای فایل‌هایی که پسوند .php دارند (regex)
+    }
+
+    location ~* \.(jpg|jpeg|png|gif|ico)$ {
+        # بدون حساسیت به حروف بزرگ/کوچک (jpg/JPG و ...)
+    }
 
 sample code:
 -----------------
@@ -81,3 +113,47 @@ http {
 session_03
 
 logging
+access log
+error log 
+
+Syntax:	error_log file [level];
+Default: error_log logs/error.log error;
+Context: main, http, mail, stream, server, location
+
+/var/log/nginx/
+
+change format
+Alphabetical index of variable
+
+Syntax:	log_format name [escape=default|json|none] string ...;
+Default: log_format combined "...";
+Context: http
+
+sample code:
+-----------------
+user sss;
+
+error_log /var/log/nginx/error.log warn;
+
+events {}
+
+http {
+
+        log_format main '$remote_addr $remote_user $time_local $request '
+                        '$status $body_byte_sent $http_user_agent';
+        server {
+                server_name 127.0.0.1;
+                listen 81;
+                root /home/sss/Desktop/nginx/blog;
+                index blog.html;
+
+                access_log /var/log/nginx/access.log main;
+
+                location /docs {
+                        index doc.html;
+                        error_log /var/log/nginx/error_docs.log warn;
+                        access_log /var/log/nginx/access_docs.log main;
+                }
+        }       
+}
+------------------------------------------------------------
