@@ -335,3 +335,73 @@ http {
 		}
 	}	
 }
+
+------------------------------------------------------------
+
+section_08
+
+load balancer
+Module ngx_http_upstream_module
+
+Syntax:	upstream name { ... }
+Default:	—
+Context:	http
+
+Round Robin 
+Least Connections 
+IP Hash 
+Hash 
+Least Time 
+Random 
+
+backup
+down
+
+helth check
+max_fials=<n> fail_timeout=<n>s
+
+sample code:
+-----------------
+# main context
+user sss;
+events {}
+http {
+	upstream backends {
+		least_conn;
+		# ip_hash;
+		server 127.0.0.1:82 weight=1;
+		# server 127.0.0.1:83 weight=3 down;
+		server 127.0.0.1:83 weight=3 down;
+		# server 127.0.0.1:84 weight=2;
+		server 127.0.0.1:84 backup;
+	}
+
+	server {
+		server_name 127.0.0.1;
+		listen 81;
+		location / {
+			proxy_pass http://backends;
+		}
+	}	
+
+	server {
+		server_name 127.0.0.1;
+		listen 82;
+		root /home/sss/Desktop/nginx/blog/one;
+	}	
+
+		server {
+		server_name 127.0.0.1;
+		listen 83;
+		root /home/sss/Desktop/nginx/blog/two;
+	}
+
+		server {
+		server_name 127.0.0.1;
+		listen 84;
+		root /home/sss/Desktop/nginx/blog/three;
+	}
+	
+}
+
+------------------------------------------------------------
