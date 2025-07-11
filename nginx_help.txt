@@ -286,3 +286,52 @@ http {
 ------------------------------------------------------------
 
 section_07
+
+reverse proxy
+
+Module ngx_http_proxy_module
+
+Syntax:	proxy_pass URL;
+Default:	—
+Context:	location, if in location, limit_except
+
+Syntax:	proxy_set_header field value;
+Default: proxy_set_header Host $proxy_host;
+         proxy_set_header Connection close;
+Context:	http, server, location
+
+ماژول ngx_http_proxy_module امکان ارسال درخواست‌ها به سرور دیگر را فراهم می‌کند.
+proxy_set_header Host $host;
+proxy_set_header X-Real-IP $remote_addr;
+
+اگر مقدار فیلد هدر یک رشته خالی باشد، این فیلد به سرور پروکسی ارسال نخواهد شد
+proxy_set_header Accept-Encoding "";
+
+sample code:
+-----------------
+# main context
+user sss;
+events {}
+http {
+	server {
+		server_name 127.0.0.1;
+		listen 81;
+		
+		location / {
+			proxy_set_header Host $host;
+			proxy_set_header X-Real-IP $remote_addr;
+			proxy_set_header Accept-Encoding "";
+			proxy_pass http://127.0.0.1:82;
+		}
+	}	
+	
+	server {
+		server_name 127.0.0.1;
+		listen 82;
+		
+		location / {
+			root /home/sss/Desktop/nginx/blog/one;
+			index one.html;
+		}
+	}	
+}
