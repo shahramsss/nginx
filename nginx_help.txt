@@ -209,3 +209,80 @@ http {
 	}	
 }
 ------------------------------------------------------------
+
+session_06
+
+Syntax:	worker_processes number | auto;
+Default:	
+worker_processes 1;
+Context:	main
+
+Syntax:	autoindex on | off;
+Default:	
+autoindex off;
+Context:	http, server, location
+
+Syntax:	include file | mask;
+Default:	—
+Context:	any
+
+cat /etc/nginx/mime.types
+include mime.types;
+include vhosts/*.conf;
+
+Syntax:	default_type mime-type;
+Default:	
+default_type text/plain;
+Context:	http, server, location
+
+nginx -s <SIGNAL>
+where <SIGNAL> can be one of the following:
+
+quit – Shut down gracefully (the SIGQUIT signal)
+reload – Reload the configuration file (the SIGHUP signal)
+reopen – Reopen log files (the SIGUSR1 signal)
+stop – Shut down immediately (or fast shutdown, the SIGTERM signal)
+
+
+sample code:
+-----------------
+user sss;
+
+error_log /var/log/nginx/error.log;
+
+events {}
+
+worker_processes auto;
+
+http {
+	server {
+		server_name 127.0.0.1;
+		listen 81;
+		root /home/sss/Desktop/nginx/blog;
+
+		error_page 404 =200 /404.html;
+
+		access_log /var/log/nginx/access.log;
+
+		autoindex on;
+		index NO_EXSTENT_INDEX;
+
+		include /etc/nginx/mime.types;
+		default_type text/plain;
+			
+		location /docs {
+			index doc.html;
+			error_log /var/log/nginx/error_docs.log;
+			access_log /var/log/nginx/access_docs.log;
+		}
+		location /404.html {
+			root /home/sss/Desktop/nginx/blog/errors;
+			internal;
+
+		}
+	}	
+}
+
+------------------------------------------------------------
+
+section_07
