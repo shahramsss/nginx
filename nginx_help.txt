@@ -1,3 +1,4 @@
+d1 r1
 session_01
 
 install nginx
@@ -8,7 +9,7 @@ directve
 contex = block or section
 
 ------------------------------------------------------------
-
+d1 r1
 session_02
 
 modules
@@ -42,7 +43,7 @@ http {
 }
 
 ------------------------------------------------------------
-
+d1 r1
 section_03
 
 user 
@@ -69,7 +70,7 @@ http://example.com/somepath/image.jpg
 /var/www/html/somepath/image.jpg
 
 
-location / {
+    location / {
         # تنظیمات پیش‌فرض برای همه‌ی درخواست‌ها
     }
 
@@ -109,8 +110,8 @@ http {
 }
 
 ------------------------------------------------------------
-
-session_03
+d1 r1
+session_04
 
 logging
 access log
@@ -155,5 +156,56 @@ http {
                         access_log /var/log/nginx/access_docs.log main;
                 }
         }       
+}
+------------------------------------------------------------
+
+session_05
+
+error pages
+
+Syntax:	error_page code ... [=[response]] uri;
+Default:	—
+Context:	http, server, location, if in location
+
+error_page 404             /404.html;
+error_page 500 502 503 504 /50x.html;
+
+Syntax:	internal;
+Default:	—
+Context:	location
+
+
+sample code:
+-----------------
+# main context
+user sss;
+
+error_log /var/log/nginx/error.log;
+
+events {}
+
+http {
+	server {
+		server_name 127.0.0.1;
+		listen 81;
+		root /home/sss/Desktop/nginx/blog;
+		index blog.html;
+
+		error_page 404 =200 /404.html;
+
+		access_log /var/log/nginx/access.log;
+			
+		location /docs {
+			index doc.html;
+			error_log /var/log/nginx/error_docs.log;
+			access_log /var/log/nginx/access_docs.log;
+		}
+
+		location /404.html {
+			root /home/sss/Desktop/nginx/blog/errors;
+			internal;
+
+		}
+	}	
 }
 ------------------------------------------------------------
