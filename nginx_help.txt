@@ -405,3 +405,118 @@ http {
 }
 
 ------------------------------------------------------------
+
+section_09
+
+limit
+bursty trafic
+leaky backet
+
+Module ngx_http_limit_conn_module
+
+Syntax:	limit_conn zone number;
+Default:	—
+Context:	http, server, location
+
+sample code:
+-----------------
+user sss;
+events {}
+http {
+	limit_conn_zone $binary_remote_addr zone=addr:2m;	
+	limit_conn_status 429;
+
+	server {
+		server_name 127.0.0.1;
+		listen 82;
+		root /home/sss/Desktop/nginx/blog/one;
+		limit_conn addr 1;
+	}	
+}
+-----------------
+
+Module ngx_http_limit_req_module
+
+Syntax:	limit_req zone=name [burst=number] [nodelay | delay=number];
+Default:	—
+Context:	http, server, location
+
+sample code:
+-----------------
+user sss;
+events {}
+http {
+	limit_req_zone $binary_remote_addr zone=addr:2m rate=3r/s;
+	limit_conn_status 429;
+
+	server {
+		server_name 127.0.0.1;
+		listen 82;
+		root /home/sss/Desktop/nginx/blog/one;
+		limit_req zone=addr burst=5;
+		location / {}
+	}	
+}
+-----------------
+
+Syntax:	limit_rate_after size;
+Default:	
+limit_rate_after 0;
+Context:	http, server, location, if in location
+This directive appeared in version 0.8.0.
+
+Syntax:	limit_rate rate;
+Default:	
+limit_rate 0;
+Context:	http, server, location, if in location
+The rate is specified in bytes per second.
+
+sample code:
+-----------------
+user sss;
+events {}
+http {
+
+	server {
+		server_name 127.0.0.1;
+		listen 82;
+		root /home/sss/Desktop/nginx/blog/one;
+		limit_rate_after 10m;
+		limit_rate 1m;
+		location / {}
+	}	
+}
+------------------------------------------------------------
+
+section_10
+
+Module ngx_http_auth_basic_module
+
+Syntax:	auth_basic string | off;
+Default:	
+auth_basic off;
+Context:	http, server, location, limit_except
+
+Syntax:	auth_basic_user_file file;
+Default:	—
+Context:	http, server, location, limit_except
+
+use hash for password in file
+sample hash in terminal: openssl passwd sss
+
+sample code:
+-----------------
+user sss;
+events {}
+http {
+
+	server {
+		server_name 127.0.0.1;
+		listen 82;
+		root /home/sss/Desktop/nginx/blog/one;
+		auth_basic "home";
+		auth_basic_user_file /etc/nginx/conf.d/passwd;
+		location / {}
+	}	
+}
+------------------------------------------------------------
