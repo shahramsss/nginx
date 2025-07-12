@@ -559,6 +559,9 @@ Context:	http, server, location
 Syntax:	proxy_cache_valid [code ...] time;
 Default:	—
 Context:	http, server, location
+Sets caching time for different response codes
+proxy_cache_valid 200 302 10m;
+proxy_cache_valid 404 1m;
 
 
 $upstream_cache_status
@@ -655,6 +658,9 @@ section_13
 buffering
 
 Syntax:	proxy_buffering on | off;
-Default:	
-proxy_buffering on;
+Default:	proxy_buffering on;
 Context:	http, server, location
+
+------------------------------------------------------------
+
+section_14
