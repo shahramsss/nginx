@@ -664,3 +664,35 @@ Context:	http, server, location
 ------------------------------------------------------------
 
 section_14
+
+gzip
+compresses responses
+brotli
+
+Syntax:	gzip on | off;
+Default:	gzip off;
+Context:	http, server, location, if in location
+
+
+Syntax:	gzip_comp_level level;
+Default:	gzip_comp_level 1;
+Context:	http, server, location
+Sets a gzip compression level of a response. Acceptable values are in the range from 1 to 9.
+
+Syntax:	gzip_min_length length(byte);
+Default:	gzip_min_length 20;
+Context:	http, server, location
+تعیین می‌کنه حداقل اندازه پاسخ (بر حسب بایت) که Nginx باید فشرده‌اش کنه.
+
+Syntax:	gzip_disable regex ...;
+Default:	—
+Context:	http, server, location
+This directive appeared in version 0.6.23.
+دستور gzip_disable به Nginx می‌گه که برای بعضی از کاربرها gzip رو غیرفعال کنه. معمولاً برای مرورگرهای قدیمی یا ناسازگار با gzip استفاده می‌شه، مثل Internet Explorer 6 و پایین‌تر.
+
+
+Syntax:	gzip_types mime-type ...;
+Default:	gzip_types text/html;
+Context:	http, server, location
+این دستور مشخص می‌کنه کدام نوع محتوا (MIME types) باید توسط Nginx با gzip فشرده بشه.
+
