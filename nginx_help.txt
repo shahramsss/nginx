@@ -599,6 +599,8 @@ Context:	http, server, location
 This directive appeared in version 1.1.12.
 only one request when multi request
 
+sample code:
+-----------------
 # main context
 user sss;
 events {}
@@ -696,3 +698,215 @@ Default:	gzip_types text/html;
 Context:	http, server, location
 این دستور مشخص می‌کنه کدام نوع محتوا (MIME types) باید توسط Nginx با gzip فشرده بشه.
 
+sample code:
+-----------------
+# main context
+user sss;
+events {}
+http {
+		gzip on;
+		gzip_min_length 100;
+		gzip_comp_level 4;
+		gzip_disable "msie6";
+		gzip_types text/plain text/css text/javascript;
+		
+		upstream backends {
+			server 127.0.0.1:82;
+		}
+		server {
+			server_name 127.0.0.1;
+			listen 81;
+			location / {
+				proxy_pass http://backends;
+
+			}
+		}	
+
+		server {
+			server_name 127.0.0.1;
+			listen 82;
+			root /home/sss/Desktop/nginx/blog/one;
+		}	
+	
+}
+
+
+------------------------------------------------------------
+
+section_15
+
+Syntax:	keepalive_min_timeout timeout;
+Default:	keepalive_min_timeout 0;
+Context:	http, server, location
+This directive appeared in version 1.27.4.
+برای نگه داشتن اتصال بین Nginx و کلاینت یا بک‌اند (مثل upstream servers) استفاده می‌کنید.
+
+Syntax:	keepalive_requests number;
+Default:	keepalive_requests 1000;
+Context:	http, server, location
+This directive appeared in version 0.8.0.
+چند درخواست (request) می‌تونن به صورت پشت‌سر‌هم ارسال بشن قبل از اینکه اتصال بسته بشه.
+
+Syntax:	keepalive_disable none | browser ...;
+Default:	
+keepalive_disable msie6;
+Context:	http, server, location
+تعیین می‌کند که برای کدام مرورگرها قابلیت Keep-Alive غیرفعال شود
+
+Syntax:	send_timeout time;
+Default:	send_timeout 60s;
+Context:	http, server, location
+اگر کلاینت برای مدتی هیچ داده‌ای از سرور دریافت نکنه، ارتباط قطع بشه 
+بیشتر در زمان نوشتن(whrite)
+
+Syntax:	client_body_timeout time;
+Default:	client_body_timeout 60s;
+Context:	http, server, location
+between two successive read 
+ سرور چقدر منتظر بماند تا کل بادی (Body) درخواست کلاینت دریافت شود.
+
+ Syntax:	client_body_timeout time;
+Default:	client_body_timeout 60s;
+Context:	http, server, location
+چه مدت زمانی سرور باید منتظر بمونه تا کل Body درخواست کلاینت رو دریافت کنه.
+
+sample code:
+-----------------
+# main context
+user sss;
+events {}
+http {
+		keepalive_min_timeout 20s 18s;
+		keepalive_requests 20;
+		keepalive_disable msie6;
+		send_timeout 60s;
+		client_body_timeout 30s;
+		client_body_timeout 30s;
+
+		upstream backends {
+			server 127.0.0.1:82;
+		}
+		server {
+			server_name 127.0.0.1;
+			listen 81;
+			location / {
+				proxy_pass http://backends;
+
+			}
+		}	
+
+		server {
+			server_name 127.0.0.1;
+			listen 82;
+			root /home/sss/Desktop/nginx/blog/one;
+		}	
+	
+}
+
+------------------------------------------------------------
+
+section_161
+
+rewrite
+
+if (condition){ operations }
+
+Syntax:	return code [text];
+		return code URL;
+		return URL;
+Default:	—
+Context:	server, location, if
+
+Syntax:	rewrite regex replacement [flag];
+Default:	—
+Context:	server, location, if
+flags= last, break
+301, 302
+
+Syntax:	rewrite_log on | off;
+Default:	rewrite_log off;
+Context:	http, server, location, if
+notice level
+
+sample code:
+-----------------
+# main context
+user sss;
+events {}
+http {
+		server {
+			server_name 127.0.0.1;
+			listen 81;
+			return 301 $scheme://www.domain.com$request_uri
+			root /home/sss/Desktop/nginx/blog/one;
+
+			# rewrite ^/first$ /two;
+
+			# location / {
+			# 		# if ($request_method = POST){
+			# 		# 	return 405 "method is not allowed";
+			# 		# }
+			# 		# return 200 "Hello";
+			# 		# return 302 http://www.google.com;
+			# 		# return 301 /two;
+			# 		# rewrite ^/first$ /two;
+			# 		# rewrite ^/first$/(.*)$/(.*)$/ /two/$1/$2;
+			# }
+
+			location /first {
+					rewrite ^/first$/(.*)$ /blog/$1;
+			}
+			
+			location /two {
+				root /home/sss/Desktop/nginx/blog;
+			}
+			
+			location /blog {
+				root /home/sss/Desktop/nginx;
+			}
+		}	
+	
+}
+
+------------------------------------------------------------
+
+section_17
+
+worker_connections
+ هر worker process حداکثر چند اتصال (connection) هم‌زمان می‌تونه مدیریت کنه.
+in terminl: ulimit -n
+
+accept_mutext on/off;
+
+مشخص می‌کند که worker processها چگونه به اتصالات جدید (new connections) پاسخ بدهند.
+
+daemon on/off;
+ آیا Nginx به‌صورت دایمون (Background Process) اجرا شود یا نه.
+
+
+
+worker_rlimit_nofile number;
+ برای تعیین حداکثر تعداد فایل‌هایی است که هر فرآیند worker می‌تواند باز کند.
+
+Syntax:	limit_except method ... { ... }
+Default:	—
+Context:	location
+
+sample code 
+-----------------
+# main context
+user sss;
+events {}
+http {
+		server {
+			server_name 127.0.0.1;
+			listen 81;
+			root /home/sss/Desktop/nginx/blog/one;
+
+			location / {
+					limit_except POST {
+					deny  all;
+}
+			}
+		}	
+}
