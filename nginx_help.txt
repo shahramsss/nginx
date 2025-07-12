@@ -158,7 +158,7 @@ http {
         }       
 }
 ------------------------------------------------------------
-
+d2 r1
 session_05
 
 error pages
@@ -209,7 +209,7 @@ http {
 	}	
 }
 ------------------------------------------------------------
-
+d2 r1
 session_06
 
 Syntax:	worker_processes number | auto;
@@ -284,7 +284,7 @@ http {
 }
 
 ------------------------------------------------------------
-
+d2 r1
 section_07
 
 reverse proxy
@@ -337,7 +337,7 @@ http {
 }
 
 ------------------------------------------------------------
-
+d2 r1
 section_08
 
 load balancer
@@ -405,7 +405,7 @@ http {
 }
 
 ------------------------------------------------------------
-
+d2 r1
 section_09
 
 limit
@@ -487,7 +487,7 @@ http {
 	}	
 }
 ------------------------------------------------------------
-
+d2 r1
 section_10
 
 Module ngx_http_auth_basic_module
@@ -503,6 +503,7 @@ Context:	http, server, location, limit_except
 
 use hash for password in file
 sample hash in terminal: openssl passwd sss
+user:password in file
 
 sample code:
 -----------------
@@ -519,4 +520,141 @@ http {
 		location / {}
 	}	
 }
+
 ------------------------------------------------------------
+d2 r1
+section_11
+
+ngx_http_access_module
+allow 
+deny
+
+Syntax:	allow address | CIDR | unix: | all;
+Default:	—
+Context:	http, server, location, limit_except
+
+Syntax:	deny address | CIDR | unix: | all;
+Default:	—
+Context:	http, server, location, limit_except
+
+------------------------------------------------------------
+
+section_12
+
+proxy_cache
+proxy_cache_valid
+stale
+
+Syntax:	proxy_cache_path path [levels=levels] [use_temp_path=on|off] keys_zone=name:size [inactive=time] [max_size=size] [min_free=size]
+ 		[manager_files=number] [manager_sleep=time] [manager_threshold=time] [loader_files=number] [loader_sleep=time] 
+		[loader_threshold=time] [purger=on|off] [purger_files=number] [purger_sleep=time] [purger_threshold=time];
+Default:	—
+Context:	http
+
+Syntax:	proxy_cache zone | off;
+Default:	
+proxy_cache off;
+Context:	http, server, location
+
+Syntax:	proxy_cache_valid [code ...] time;
+Default:	—
+Context:	http, server, location
+
+
+$upstream_cache_status
+keeps the status of accessing a response cache (0.8.3). The status can be either “MISS”, “BYPASS”, “EXPIRED”, “STALE”, “UPDATING”, “REVALIDATED”, or “HIT”.
+
+Syntax:	proxy_cache_key string;
+Default:	
+proxy_cache_key $scheme$proxy_host$request_uri;
+Context:	http, server, location
+
+proxy_cache_key "$host$request_uri $cookie_user";
+
+Syntax:	proxy_cache_bypass string ...;
+Default:	—
+Context:	http, server, location
+
+می‌تونه یک یا چند متغیر (مثل $cookie_..., $arg_..., $http_...) یا مقادیر ثابت باشه.
+اگر حتی یکی از این متغیرها مقدار غیرخالی یا متفاوت از "0" داشته باشه، کش نادیده گرفته می‌شه.
+proxy_cache_bypass $http_cache_bypass; => header -> cache_bypass=<number or string and not 0 or empty>
+proxy_cache_bypass $arg_shold_bypass_cache; -> in url ?shold_bypass_cache=True
+proxy_cache_bypass $cookie_nocache;
+
+Syntax:	proxy_cache_use_stale error | timeout | invalid_header | updating | http_500 | http_502 | http_503 | http_504 | http_403 | http_404 | http_429 | off ...;
+Default:	
+proxy_cache_use_stale off;
+Context:	http, server, location
+
+Syntax:	proxy_connect_timeout time;
+Default:	proxy_connect_timeout 60s;
+Context:	http, server, location
+
+Syntax:	proxy_cache_lock on | off;
+Default:	proxy_cache_lock off;
+Context:	http, server, location
+This directive appeared in version 1.1.12.
+only one request when multi request
+
+# main context
+user sss;
+events {}
+http {
+
+	proxy_cache_path /home/sss/Desktop/cache levels=1:2 keys_zone=mycache:10m inactive=3h max_size=20g;
+
+	upstream backends {
+		server 127.0.0.1:82;
+		server 127.0.0.1:83;
+		server 127.0.0.1:84;
+	}
+
+
+	server {
+		server_name 127.0.0.1;
+		listen 81;
+		location / {
+			proxy_pass http://backends;
+			proxy_cache mycache;
+			proxy_cache_valid any 10m;
+			proxy_cache_key "$host$request_uri $cookie_user";
+			proxy_cache_bypass $http_cache_bypass;
+			proxy_cache_use_stale error timeout http_500 http_503;
+			proxy_connect_timeout 30s;
+			proxy_cache_lock on ;
+			add_header X-Proxy_Cache $upstream_cache_status;
+		}
+	}	
+
+	server {
+		server_name 127.0.0.1;
+		listen 82;
+		root /home/sss/Desktop/nginx/blog/one;
+	}	
+
+		server {
+		server_name 127.0.0.1;
+		listen 83;
+		root /home/sss/Desktop/nginx/blog/two;
+	}
+
+		server {
+		server_name 127.0.0.1;
+		listen 84;
+		root /home/sss/Desktop/nginx/blog/three;
+	}
+	
+}
+
+
+
+------------------------------------------------------------
+
+section_13
+
+buffering
+
+Syntax:	proxy_buffering on | off;
+Default:	
+proxy_buffering on;
+Context:	http, server, location
