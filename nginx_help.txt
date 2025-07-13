@@ -1,4 +1,4 @@
-d1 r1
+d1 r1 r2
 session_01
 
 install nginx
@@ -9,7 +9,7 @@ directve
 contex = block or section
 
 ------------------------------------------------------------
-d1 r1
+d1 r1 r2
 session_02
 
 modules
@@ -43,7 +43,7 @@ http {
 }
 
 ------------------------------------------------------------
-d1 r1
+d1 r1 r2
 section_03
 
 user 
@@ -110,7 +110,7 @@ http {
 }
 
 ------------------------------------------------------------
-d1 r1
+d1 r1 r2  
 session_04
 
 logging
@@ -158,7 +158,7 @@ http {
         }       
 }
 ------------------------------------------------------------
-d2 r1
+d2 r1 
 session_05
 
 error pages
@@ -538,7 +538,7 @@ Default:	—
 Context:	http, server, location, limit_except
 
 ------------------------------------------------------------
-
+d3 r1
 section_12
 
 proxy_cache
@@ -550,10 +550,14 @@ Syntax:	proxy_cache_path path [levels=levels] [use_temp_path=on|off] keys_zone=n
 		[loader_threshold=time] [purger=on|off] [purger_files=number] [purger_sleep=time] [purger_threshold=time];
 Default:	—
 Context:	http
+برای تعریف محل و مشخصات حافظه کش (cache) استفاده می‌شود. این دستور در بلاک http نوشته می‌شود و مشخص می‌کند که:
+فایل‌های کش کجا ذخیره شوند،
+چه ساختاری داشته باشند،
+چه ظرفیتی داشته باشند،
+و چه سیاست‌هایی برای حذف و انقضا استفاده شود.
 
 Syntax:	proxy_cache zone | off;
-Default:	
-proxy_cache off;
+Default:	proxy_cache off;
 Context:	http, server, location
 
 Syntax:	proxy_cache_valid [code ...] time;
@@ -562,14 +566,13 @@ Context:	http, server, location
 Sets caching time for different response codes
 proxy_cache_valid 200 302 10m;
 proxy_cache_valid 404 1m;
-
+برای تعیین مدت زمان اعتبار کش پاسخ‌های دریافت‌شده از سرور upstream استفاده می‌شود.
 
 $upstream_cache_status
 keeps the status of accessing a response cache (0.8.3). The status can be either “MISS”, “BYPASS”, “EXPIRED”, “STALE”, “UPDATING”, “REVALIDATED”, or “HIT”.
 
 Syntax:	proxy_cache_key string;
-Default:	
-proxy_cache_key $scheme$proxy_host$request_uri;
+Default:	proxy_cache_key $scheme$proxy_host$request_uri;
 Context:	http, server, location
 
 proxy_cache_key "$host$request_uri $cookie_user";
@@ -577,27 +580,31 @@ proxy_cache_key "$host$request_uri $cookie_user";
 Syntax:	proxy_cache_bypass string ...;
 Default:	—
 Context:	http, server, location
-
 می‌تونه یک یا چند متغیر (مثل $cookie_..., $arg_..., $http_...) یا مقادیر ثابت باشه.
 اگر حتی یکی از این متغیرها مقدار غیرخالی یا متفاوت از "0" داشته باشه، کش نادیده گرفته می‌شه.
+
 proxy_cache_bypass $http_cache_bypass; => header -> cache_bypass=<number or string and not 0 or empty>
 proxy_cache_bypass $arg_shold_bypass_cache; -> in url ?shold_bypass_cache=True
 proxy_cache_bypass $cookie_nocache;
 
 Syntax:	proxy_cache_use_stale error | timeout | invalid_header | updating | http_500 | http_502 | http_503 | http_504 | http_403 | http_404 | http_429 | off ...;
-Default:	
-proxy_cache_use_stale off;
+Default:	proxy_cache_use_stale off;
 Context:	http, server, location
+آیا در صورت وقوع خطا، از نسخه کش‌شده (stale) پاسخ استفاده شود یا نه.
 
 Syntax:	proxy_connect_timeout time;
 Default:	proxy_connect_timeout 60s;
 Context:	http, server, location
+ مدت‌زمانی را مشخص می‌کند که Nginx برای برقراری اتصال اولیه با سرور upstream (مثلاً backend یا API) صبر می‌کند.
 
 Syntax:	proxy_cache_lock on | off;
 Default:	proxy_cache_lock off;
 Context:	http, server, location
 This directive appeared in version 1.1.12.
 only one request when multi request
+ برای جلوگیری از "cache stampede" استفاده می‌شود. این حالت زمانی رخ می‌دهد که چندین درخواست همزمان برای یک منبع کش‌نشده به سرور upstream فرستاده شوند.
+ اگر یک URL برای اولین بار درخواست شود و هنوز کش نشده باشد، تمام درخواست‌های همزمان به سرور upstream فرستاده می‌شوند. این فشار زیادی به backend وارد می‌کند.
+
 
 sample code:
 -----------------
@@ -654,7 +661,7 @@ http {
 
 
 ------------------------------------------------------------
-
+d3 r1
 section_13
 
 buffering
@@ -662,9 +669,10 @@ buffering
 Syntax:	proxy_buffering on | off;
 Default:	proxy_buffering on;
 Context:	http, server, location
+مشخص می‌کند که آیا پاسخ دریافتی از سرور upstream ابتدا در حافظه (buffer) ذخیره شود یا مستقیماً به کلاینت ارسال شود.
 
 ------------------------------------------------------------
-
+d3 r1
 section_14
 
 gzip
@@ -732,7 +740,7 @@ http {
 
 
 ------------------------------------------------------------
-
+d3 r1
 section_15
 
 Syntax:	keepalive_min_timeout timeout;
@@ -745,7 +753,7 @@ Syntax:	keepalive_requests number;
 Default:	keepalive_requests 1000;
 Context:	http, server, location
 This directive appeared in version 0.8.0.
-چند درخواست (request) می‌تونن به صورت پشت‌سر‌هم ارسال بشن قبل از اینکه اتصال بسته بشه.
+چند درخواست می‌تونن به صورت پشت‌سر‌هم ارسال بشن قبل از اینکه اتصال بسته بشه.
 
 Syntax:	keepalive_disable none | browser ...;
 Default:	
@@ -763,12 +771,7 @@ Syntax:	client_body_timeout time;
 Default:	client_body_timeout 60s;
 Context:	http, server, location
 between two successive read 
- سرور چقدر منتظر بماند تا کل بادی (Body) درخواست کلاینت دریافت شود.
-
- Syntax:	client_body_timeout time;
-Default:	client_body_timeout 60s;
-Context:	http, server, location
-چه مدت زمانی سرور باید منتظر بمونه تا کل Body درخواست کلاینت رو دریافت کنه.
+ سرور چقدر منتظر بماند تا کل بادی درخواست کلاینت دریافت شود.
 
 sample code:
 -----------------
@@ -780,7 +783,6 @@ http {
 		keepalive_requests 20;
 		keepalive_disable msie6;
 		send_timeout 60s;
-		client_body_timeout 30s;
 		client_body_timeout 30s;
 
 		upstream backends {
@@ -804,8 +806,8 @@ http {
 }
 
 ------------------------------------------------------------
-
-section_161
+d3 r1
+section_16
 
 rewrite
 
@@ -822,6 +824,7 @@ Default:	—
 Context:	server, location, if
 flags= last, break
 301, 302
+ از آن برای ریدایرکت کردن مسیرها، حذف پسوندها، یا هدایت کاربران به مسیر جدید استفاده می‌شود.
 
 Syntax:	rewrite_log on | off;
 Default:	rewrite_log off;
@@ -869,7 +872,7 @@ http {
 }
 
 ------------------------------------------------------------
-
+d3 r1
 section_17
 
 worker_connections
@@ -891,6 +894,7 @@ worker_rlimit_nofile number;
 Syntax:	limit_except method ... { ... }
 Default:	—
 Context:	location
+برای محدود کردن نوع‌های خاصی از درخواست‌های HTTP (مثل POST, PUT, DELETE, ...) استفاده می‌شود
 
 sample code 
 -----------------
