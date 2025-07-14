@@ -161,7 +161,7 @@ http {
         }       
 }
 ------------------------------------------------------------
-d2 r1 
+d2 r1 r2
 session_05
 
 error pages
@@ -212,22 +212,32 @@ http {
 	}	
 }
 ------------------------------------------------------------
-d2 r1
+d2 r1 r2
 session_06
 
 Syntax:	worker_processes number | auto;
-Default:	
-worker_processes 1;
+Default:	worker_processes 1;
 Context:	main
+چه تعداد فرآیند worker باید برای پردازش درخواست‌ها ایجاد شوند.
 
 Syntax:	autoindex on | off;
 Default:	
 autoindex off;
 Context:	http, server, location
+وقتی یک پوشه (دایرکتوری) بدون فایل index (مثل index.html) درخواست می‌شود، لیست فایل‌های موجود در آن دایرکتوری به کاربر نمایش داده شود یا نه.
+
+index NO_EXISTENT_INDEX;
+ین دستور به Nginx می‌گوید فقط به دنبال فایلی به نام NO_EXISTENT_INDEX بگرد.
+چون این فایل وجود ندارد (نامش هم مشخصاً این را نشان می‌دهد)، Nginx هیچ فایل index پیدا نمی‌کند.
+در نتیجه:
+    اگر autoindex on; باشد → لیست فایل‌های دایرکتوری نمایش داده می‌شود.
+    اگر autoindex off; باشد → خطای 403 Forbidden یا 404 Not Found برمی‌گردد (بسته به تنظیمات دیگر).
 
 Syntax:	include file | mask;
 Default:	—
 Context:	any
+ برای وارد کردن فایل‌های پیکربندی دیگر استفاده می‌شود.
+ mime.types: فایل حاوی نوع‌های MIME که برای ارسال درست فایل‌ها مثل PDF، MP3، PNG و غیره به کار می‌رود.
 
 cat /etc/nginx/mime.types
 include mime.types;
@@ -237,7 +247,8 @@ Syntax:	default_type mime-type;
 Default:	
 default_type text/plain;
 Context:	http, server, location
-
+ برای مشخص کردن نوع MIME پیش‌فرض فایل‌ها استفاده می‌شود، در صورتی که نوع فایل به‌طور مشخص قابل تشخیص نباشد.
+ 
 nginx -s <SIGNAL>
 where <SIGNAL> can be one of the following:
 
@@ -287,7 +298,7 @@ http {
 }
 
 ------------------------------------------------------------
-d2 r1
+d2 r1 r2
 section_07
 
 reverse proxy
@@ -297,11 +308,29 @@ Module ngx_http_proxy_module
 Syntax:	proxy_pass URL;
 Default:	—
 Context:	location, if in location, limit_except
+ برای ارسال درخواست‌ها به یک سرور دیگر (upstream) استفاده می‌شود
+
+ با اسلش / در انتهای مسیر proxy_pass:
+ location /api/ {
+    proxy_pass http://localhost:8000/;
+}
+ورودی: /api/user/1
+خروجی: درخواست ارسال می‌شود به → /user/1
+🔄 یعنی /api/ از مسیر حذف می‌شود.
+
+ بدون اسلش در انتها:
+ location /api/ {
+    proxy_pass http://localhost:8000;
+}
+ورودی: /api/user/1
+خروجی: درخواست ارسال می‌شود به → /api/user/1
+🔄 یعنی مسیر به صورت کامل حفظ می‌شود.
 
 Syntax:	proxy_set_header field value;
 Default: proxy_set_header Host $proxy_host;
          proxy_set_header Connection close;
 Context:	http, server, location
+برای تنظیم یا بازنویسی هدرهای HTTP هنگام ارسال درخواست به سرور مقصد (upstream) استفاده می‌شود.
 
 ماژول ngx_http_proxy_module امکان ارسال درخواست‌ها به سرور دیگر را فراهم می‌کند.
 proxy_set_header Host $host;
@@ -309,6 +338,9 @@ proxy_set_header X-Real-IP $remote_addr;
 
 اگر مقدار فیلد هدر یک رشته خالی باشد، این فیلد به سرور پروکسی ارسال نخواهد شد
 proxy_set_header Accept-Encoding "";
+
+server_name: برای تشخیص دامنه و انتخاب بلاک server
+proxy_pass: برای فرستادن درخواست به جای دیگه (upstream)
 
 sample code:
 -----------------
@@ -340,7 +372,7 @@ http {
 }
 
 ------------------------------------------------------------
-d2 r1
+d2 r1 r2
 section_08
 
 load balancer
@@ -349,6 +381,7 @@ Module ngx_http_upstream_module
 Syntax:	upstream name { ... }
 Default:	—
 Context:	http
+ برای تعریف یک گروه از سرورهای backend (بک‌اند) استفاده می‌شود که درخواست‌ها به آن‌ها پراکسی می‌شوند
 
 Round Robin 
 Least Connections 
@@ -362,6 +395,8 @@ down
 
 helth check
 max_fials=<n> fail_timeout=<n>s
+به این معناست که Nginx بتواند تشخیص دهد کدام سرورهای upstream (سرورهای بک‌اند) سالم هستند و فقط به آن‌ها درخواست بفرستد.
+server 127.0.0.1:8000 max_fails=3 fail_timeout=30s;
 
 sample code:
 -----------------
@@ -408,7 +443,7 @@ http {
 }
 
 ------------------------------------------------------------
-d2 r1
+d2 r1 r3
 section_09
 
 limit
@@ -420,6 +455,7 @@ Module ngx_http_limit_conn_module
 Syntax:	limit_conn zone number;
 Default:	—
 Context:	http, server, location
+برای محدود کردن تعداد اتصالات همزمان (concurrent connections) به یک مقدار مشخص استفاده می‌شود. این می‌تواند به کاهش بار روی سرور و جلوگیری از حملات یا استفاده بیش از حد کمک کند.
 
 sample code:
 -----------------
@@ -443,6 +479,7 @@ Module ngx_http_limit_req_module
 Syntax:	limit_req zone=name [burst=number] [nodelay | delay=number];
 Default:	—
 Context:	http, server, location
+برای محدود کردن نرخ درخواست‌ها (rate limiting) از طرف کلاینت‌ها استفاده می‌شود تا جلوی ارسال بیش از حد درخواست‌ها (مثلاً حملات DDoS یا ربات‌های مزاحم) گرفته شود.
 
 sample code:
 -----------------
@@ -463,16 +500,16 @@ http {
 -----------------
 
 Syntax:	limit_rate_after size;
-Default:	
-limit_rate_after 0;
+Default:	limit_rate_after 0;
 Context:	http, server, location, if in location
 This directive appeared in version 0.8.0.
+ برای محدود کردن سرعت انتقال داده (bandwidth throttling) استفاده می‌شود، ولی فقط بعد از ارسال مقدار مشخصی از داده
 
 Syntax:	limit_rate rate;
-Default:	
-limit_rate 0;
+Default:	limit_rate 0;
 Context:	http, server, location, if in location
 The rate is specified in bytes per second.
+ محدود کردن سرعت انتقال داده (bandwidth throttling) به کلاینت استفاده می‌شود
 
 sample code:
 -----------------
@@ -490,15 +527,15 @@ http {
 	}	
 }
 ------------------------------------------------------------
-d2 r1
+d2 r1 r2
 section_10
 
 Module ngx_http_auth_basic_module
 
 Syntax:	auth_basic string | off;
-Default:	
-auth_basic off;
+Default:	auth_basic off;
 Context:	http, server, location, limit_except
+برای فعال کردن احراز هویت ساده HTTP (Basic Authentication) استفاده می‌شود. این روش به کاربران یک پنجره لاگین (نام کاربری و رمز عبور) نمایش می‌دهد تا برای دسترسی به یک مسیر خاص، هویت خود را تایید کنند.
 
 Syntax:	auth_basic_user_file file;
 Default:	—
@@ -525,7 +562,7 @@ http {
 }
 
 ------------------------------------------------------------
-d2 r1
+d2 r1 r2
 section_11
 
 ngx_http_access_module
